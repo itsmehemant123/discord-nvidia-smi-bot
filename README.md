@@ -26,4 +26,5 @@ python client.py
 
 ### Improvements
 
+- Show running processes.
 - As of now, it just assumes NVidia GPU and the presence of `nvidia-smi`.

@@ -1,5 +1,6 @@
 import discord
-import datetime
+from datetime import datetime
+from dateutil import tz
 from discord.ext import commands
 import logging
 import subprocess
@@ -11,6 +12,7 @@ class NvidiaGPUInfoBot:
     def __init__(self, bot):
         logging.basicConfig(level=logging.INFO)
         self.bot = bot
+        self.to_zone = tz.gettz('America/Indianapolis')
 
     @commands.command(pass_context=True, no_pm=True)
     async def info(self, ctx):
@@ -18,7 +20,7 @@ class NvidiaGPUInfoBot:
         
         deviceCount = nvmlDeviceGetCount()
         usage = discord.Embed(title='GPU Usage',
-                           description='My Embed Content.', colour=0x00CC33, timestamp=datetime.datetime.now())
+                              description='My Embed Content.', colour=0x00CC33, timestamp=datetime.now().astimezone(self.to_zone))
 
         status = ""
 
@@ -33,24 +35,38 @@ class NvidiaGPUInfoBot:
             gpuInfo += "**GPU Usage**: " + \
                 str(dUtil.gpu) + "%\n**Memory Usage**: " + \
                 str(dUtil.memory) + "%\n"
+
             dFanSpeed = nvmlDeviceGetFanSpeed(dHandle) # print with %
-            gpuInfo += "**Fan Speed**: " + str(dFanSpeed) + "%\n"
+            gpuInfo += "**Fan Speed**: " + str(dFanSpeed) + "%"
+            if (dFanSpeed > 85):
+                gpuInfo += "🔥"
+            gpuInfo += "\n"
+
             dPerfState = nvmlDeviceGetPerformanceState(dHandle)
             gpuInfo += "**Perf. State**: " + str(dPerfState) + "\n"
+            
             dGPUTemps = nvmlDeviceGetTemperature(dHandle, NVML_TEMPERATURE_GPU) # prints in Celcius
-            gpuInfo += "**Temperature**: " + str(dGPUTemps) + "C\n"
+            gpuInfo += "**Temperature**: " + str(dGPUTemps) + "C"
+            if (dGPUTemps > 80):
+                gpuInfo += "🔥"
+            gpuInfo += "\n"
+
             dCurrentWattage = nvmlDeviceGetPowerUsage(dHandle) # divide by 1000 to get wattage
             dMaxWattage = nvmlDeviceGetEnforcedPowerLimit(dHandle) # same as above
             gpuInfo += "**Wattage**: " + \
                 str(dCurrentWattage / 1000) + "W / " + \
-                str(dMaxWattage / 1000) + "W\n"
+                str(dMaxWattage / 1000) + "W"
+            if ((dCurrentWattage / dMaxWattage) > 90):
+                gpuInfo += "⚡️"
+            gpuInfo += "\n"
+
             # dProcs = nvmlDeviceGetComputeRunningProcesses(dHandle)
 
             status += "*Device " + str(i) + "*: " + dName
             if (dUtil.gpu == 0 and dUtil.memory == 0):
-                status += "✅\n\n"
+                status += "✅\n"
             else:
-                status += "❌\n\n"
+                status += "❌\n"
 
             usage.add_field(name=dName, value=gpuInfo, inline=True)
         
