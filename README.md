@@ -24,6 +24,13 @@ pip install -r requirements.txt
 python client.py
 ```
 
+### Command (s)
+
+- Show the numbers with:
+```
+!info
+```
+
 ### Improvements
 
 - Show running processes.
