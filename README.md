@@ -1,4 +1,4 @@
-## wheatley
+## GPU Info bot
 
 ### Setup
 
