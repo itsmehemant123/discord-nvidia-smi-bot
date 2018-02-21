@@ -30,11 +30,15 @@ class NvidiaGPUInfoBot:
             gpuInfo = "*Device " + str(i) + "*\n"
 
             dName = nvmlDeviceGetName(dHandle).decode("utf-8")
-            # dMemInfo = nvmlDeviceGetMemoryInfo(dHandle) #total, free, used
+            
             dUtil = nvmlDeviceGetUtilizationRates(dHandle) # gpu, memory
             gpuInfo += "**GPU Usage**: " + \
-                str(dUtil.gpu) + "%\n**Memory Usage**: " + \
-                str(dUtil.memory) + "%\n"
+                str(dUtil.gpu) + "%\n"
+
+            dMemInfo = nvmlDeviceGetMemoryInfo(dHandle) #total, free, used
+            gpuInfo += "**Memory Usage**: " + \
+                "{0:.2f}".format(dMemInfo.used * 100 / dMemInfo.total) + "%\n"
+            
 
             dFanSpeed = nvmlDeviceGetFanSpeed(dHandle) # print with %
             gpuInfo += "**Fan Speed**: " + str(dFanSpeed) + "%"
@@ -63,7 +67,7 @@ class NvidiaGPUInfoBot:
             # dProcs = nvmlDeviceGetComputeRunningProcesses(dHandle)
 
             status += "*Device " + str(i) + "*: " + dName
-            if (dUtil.gpu == 0 and dUtil.memory == 0):
+            if (dUtil.gpu == 0 and int(dMemInfo.used * 100/dMemInfo.total) == 0):
                 status += "✅\n"
             else:
                 status += "❌\n"
